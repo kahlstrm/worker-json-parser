@@ -229,6 +229,24 @@ describe("AsyncJson - Worker Failure Scenarios", () => {
         vi.useRealTimers();
       }
     }, 5000);
+
+    it("should use default 60s timeout when not specified", async () => {
+      vi.useFakeTimers();
+      try {
+        asyncJson = new AsyncJson(1);
+
+        const hangPromise = (asyncJson as any).__TEST_hangWorker__();
+        const expectation = expect(hangPromise).rejects.toThrow("timed out");
+
+        await vi.advanceTimersByTimeAsync(60_000);
+        await expectation;
+
+        await asyncJson.close();
+        await vi.runAllTimersAsync();
+      } finally {
+        vi.useRealTimers();
+      }
+    }, 5000);
   });
 
   describe("Concurrency Under Failure", () => {
