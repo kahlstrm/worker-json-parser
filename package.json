@@ -1,0 +1,17 @@
+{
+  "name": "worker-json-parser",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^4.0.12",
+    "typescript": "^5.3.0",
+    "vitest": "^4.0.0"
+  }
+}
