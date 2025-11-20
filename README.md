@@ -2,12 +2,6 @@
 
 Offload JSON parsing and stringification to worker threads for non-blocking operations.
 
-## Installation
-
-```bash
-npm install worker-json-parser
-```
-
 ## Usage
 
 ```typescript
