@@ -1,5 +1,6 @@
 // benchmark.ts - Compare AsyncJson worker pool vs blocking JSON operations
 import { AsyncJson } from "../AsyncJson.ts";
+import { getDefaultWorkerCounts } from "./benchUtils.ts";
 
 interface BenchmarkResult {
   name: string;
@@ -193,6 +194,19 @@ function printResults(title: string, results: BenchmarkResult[]) {
   });
 }
 
+function listWorkerCounts(): number[] {
+  const env = process.env.WORKER_COUNTS;
+  if (env) {
+    return env
+      .split(",")
+      .map((n) => Number(n.trim()))
+      .filter((n) => Number.isFinite(n) && n >= 1)
+      .map((n) => Math.trunc(n));
+  }
+
+  return getDefaultWorkerCounts();
+}
+
 async function runBenchmarks() {
   console.log("AsyncJson Worker Pool Benchmark");
   console.log("================================\n");
@@ -207,6 +221,8 @@ async function runBenchmarks() {
   console.log("Warmup complete. Starting benchmarks...\n");
 
   const iterations = 1000;
+  const workerCounts = listWorkerCounts();
+  console.log(`Using worker counts: ${workerCounts.join(", ")}`);
 
   // Small objects
   const smallObj = generateSmallObject();
@@ -215,18 +231,11 @@ async function runBenchmarks() {
   const smallResults: BenchmarkResult[] = [];
 
   smallResults.push(await benchmarkBlocking("stringify", smallObj, iterations));
-  smallResults.push(
-    await benchmarkAsyncJson("stringify", smallObj, iterations, 1),
-  );
-  smallResults.push(
-    await benchmarkAsyncJson("stringify", smallObj, iterations, 2),
-  );
-  smallResults.push(
-    await benchmarkAsyncJson("stringify", smallObj, iterations, 4),
-  );
-  smallResults.push(
-    await benchmarkAsyncJson("stringify", smallObj, iterations, 8),
-  );
+  for (const workers of workerCounts) {
+    smallResults.push(
+      await benchmarkAsyncJson("stringify", smallObj, iterations, workers),
+    );
+  }
 
   printResults("Small Object Stringify Results", smallResults);
 
@@ -234,18 +243,11 @@ async function runBenchmarks() {
   smallParseResults.push(
     await benchmarkBlocking("parse", smallObj, iterations),
   );
-  smallParseResults.push(
-    await benchmarkAsyncJson("parse", smallObj, iterations, 1),
-  );
-  smallParseResults.push(
-    await benchmarkAsyncJson("parse", smallObj, iterations, 2),
-  );
-  smallParseResults.push(
-    await benchmarkAsyncJson("parse", smallObj, iterations, 4),
-  );
-  smallParseResults.push(
-    await benchmarkAsyncJson("parse", smallObj, iterations, 8),
-  );
+  for (const workers of workerCounts) {
+    smallParseResults.push(
+      await benchmarkAsyncJson("parse", smallObj, iterations, workers),
+    );
+  }
 
   printResults("Small Object Parse Results", smallParseResults);
 
@@ -258,18 +260,11 @@ async function runBenchmarks() {
   mediumResults.push(
     await benchmarkBlocking("stringify", mediumObj, iterations),
   );
-  mediumResults.push(
-    await benchmarkAsyncJson("stringify", mediumObj, iterations, 1),
-  );
-  mediumResults.push(
-    await benchmarkAsyncJson("stringify", mediumObj, iterations, 2),
-  );
-  mediumResults.push(
-    await benchmarkAsyncJson("stringify", mediumObj, iterations, 4),
-  );
-  mediumResults.push(
-    await benchmarkAsyncJson("stringify", mediumObj, iterations, 8),
-  );
+  for (const workers of workerCounts) {
+    mediumResults.push(
+      await benchmarkAsyncJson("stringify", mediumObj, iterations, workers),
+    );
+  }
 
   printResults("Medium Object Stringify Results", mediumResults);
 
@@ -277,18 +272,11 @@ async function runBenchmarks() {
   mediumParseResults.push(
     await benchmarkBlocking("parse", mediumObj, iterations),
   );
-  mediumParseResults.push(
-    await benchmarkAsyncJson("parse", mediumObj, iterations, 1),
-  );
-  mediumParseResults.push(
-    await benchmarkAsyncJson("parse", mediumObj, iterations, 2),
-  );
-  mediumParseResults.push(
-    await benchmarkAsyncJson("parse", mediumObj, iterations, 4),
-  );
-  mediumParseResults.push(
-    await benchmarkAsyncJson("parse", mediumObj, iterations, 8),
-  );
+  for (const workers of workerCounts) {
+    mediumParseResults.push(
+      await benchmarkAsyncJson("parse", mediumObj, iterations, workers),
+    );
+  }
 
   printResults("Medium Object Parse Results", mediumParseResults);
 
@@ -299,18 +287,11 @@ async function runBenchmarks() {
   const largeResults: BenchmarkResult[] = [];
 
   largeResults.push(await benchmarkBlocking("stringify", largeObj, iterations));
-  largeResults.push(
-    await benchmarkAsyncJson("stringify", largeObj, iterations, 1),
-  );
-  largeResults.push(
-    await benchmarkAsyncJson("stringify", largeObj, iterations, 2),
-  );
-  largeResults.push(
-    await benchmarkAsyncJson("stringify", largeObj, iterations, 4),
-  );
-  largeResults.push(
-    await benchmarkAsyncJson("stringify", largeObj, iterations, 8),
-  );
+  for (const workers of workerCounts) {
+    largeResults.push(
+      await benchmarkAsyncJson("stringify", largeObj, iterations, workers),
+    );
+  }
 
   printResults("Large Object Stringify Results", largeResults);
 
@@ -318,18 +299,11 @@ async function runBenchmarks() {
   largeParseResults.push(
     await benchmarkBlocking("parse", largeObj, iterations),
   );
-  largeParseResults.push(
-    await benchmarkAsyncJson("parse", largeObj, iterations, 1),
-  );
-  largeParseResults.push(
-    await benchmarkAsyncJson("parse", largeObj, iterations, 2),
-  );
-  largeParseResults.push(
-    await benchmarkAsyncJson("parse", largeObj, iterations, 4),
-  );
-  largeParseResults.push(
-    await benchmarkAsyncJson("parse", largeObj, iterations, 8),
-  );
+  for (const workers of workerCounts) {
+    largeParseResults.push(
+      await benchmarkAsyncJson("parse", largeObj, iterations, workers),
+    );
+  }
 
   printResults("Large Object Parse Results", largeParseResults);
 
@@ -342,24 +316,17 @@ async function runBenchmarks() {
   seqConcResults.push(
     await benchmarkBlocking("stringify", mediumObj, iterations),
   );
-  seqConcResults.push(
-    await benchmarkSequential("stringify", mediumObj, iterations, 1),
-  );
-  seqConcResults.push(
-    await benchmarkSequential("stringify", mediumObj, iterations, 4),
-  );
-  seqConcResults.push(
-    await benchmarkSequential("stringify", mediumObj, iterations, 8),
-  );
-  seqConcResults.push(
-    await benchmarkAsyncJson("stringify", mediumObj, iterations, 1),
-  );
-  seqConcResults.push(
-    await benchmarkAsyncJson("stringify", mediumObj, iterations, 4),
-  );
-  seqConcResults.push(
-    await benchmarkAsyncJson("stringify", mediumObj, iterations, 8),
-  );
+  for (const workers of workerCounts) {
+    seqConcResults.push(
+      await benchmarkSequential("stringify", mediumObj, iterations, workers),
+    );
+  }
+
+  for (const workers of workerCounts) {
+    seqConcResults.push(
+      await benchmarkAsyncJson("stringify", mediumObj, iterations, workers),
+    );
+  }
 
   printResults("Sequential vs Concurrent Results", seqConcResults);
 
@@ -371,24 +338,17 @@ async function runBenchmarks() {
   seqConcParseResults.push(
     await benchmarkBlocking("parse", mediumObj, iterations),
   );
-  seqConcParseResults.push(
-    await benchmarkSequential("parse", mediumObj, iterations, 1),
-  );
-  seqConcParseResults.push(
-    await benchmarkSequential("parse", mediumObj, iterations, 4),
-  );
-  seqConcParseResults.push(
-    await benchmarkSequential("parse", mediumObj, iterations, 8),
-  );
-  seqConcParseResults.push(
-    await benchmarkAsyncJson("parse", mediumObj, iterations, 1),
-  );
-  seqConcParseResults.push(
-    await benchmarkAsyncJson("parse", mediumObj, iterations, 4),
-  );
-  seqConcParseResults.push(
-    await benchmarkAsyncJson("parse", mediumObj, iterations, 8),
-  );
+  for (const workers of workerCounts) {
+    seqConcParseResults.push(
+      await benchmarkSequential("parse", mediumObj, iterations, workers),
+    );
+  }
+
+  for (const workers of workerCounts) {
+    seqConcParseResults.push(
+      await benchmarkAsyncJson("parse", mediumObj, iterations, workers),
+    );
+  }
 
   printResults("Sequential vs Concurrent Parse Results", seqConcParseResults);
 
