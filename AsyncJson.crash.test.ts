@@ -288,4 +288,151 @@ describe("AsyncJson - Worker Failure Scenarios", () => {
       expect(asyncJson.stats().workers).toBe(5);
     }, 20000);
   });
+
+  describe("Worker Pool Integrity - No Leaks", () => {
+    it("should never exceed pool size with single worker", async () => {
+      asyncJson = new AsyncJson(1);
+
+      const checkWorkerCount = () => {
+        const count = asyncJson.stats().workers;
+        expect(count).toBeLessThanOrEqual(1);
+        expect(count).toBeGreaterThanOrEqual(0);
+      };
+
+      checkWorkerCount();
+
+      // Try various operations
+      await asyncJson.parse('{"test": 1}');
+      checkWorkerCount();
+
+      await expect((asyncJson as any).__TEST_crashWorker__()).rejects.toThrow();
+      checkWorkerCount();
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      checkWorkerCount();
+
+      await expect((asyncJson as any).__TEST_uncaughtErrorWorker__()).rejects.toThrow();
+      checkWorkerCount();
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      checkWorkerCount();
+
+      await asyncJson.parse('{"test": 2}');
+      checkWorkerCount();
+
+      expect(asyncJson.stats().workers).toBe(1);
+    }, 15000);
+
+    it("should never exceed pool size with multiple workers", async () => {
+      asyncJson = new AsyncJson(3);
+
+      const checkWorkerCount = () => {
+        const count = asyncJson.stats().workers;
+        expect(count).toBeLessThanOrEqual(3);
+        expect(count).toBeGreaterThanOrEqual(0);
+      };
+
+      checkWorkerCount();
+
+      // Concurrent operations
+      const operations = [
+        asyncJson.parse('{"a": 1}'),
+        asyncJson.parse('{"b": 2}'),
+        asyncJson.parse('{"c": 3}'),
+      ];
+
+      await Promise.all(operations);
+      checkWorkerCount();
+
+      // Mix of crashes and successes
+      const mixed = [
+        (asyncJson as any).__TEST_crashWorker__(),
+        asyncJson.parse('{"d": 4}'),
+        (asyncJson as any).__TEST_uncaughtErrorWorker__(),
+      ];
+
+      await Promise.allSettled(mixed);
+      checkWorkerCount();
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      checkWorkerCount();
+
+      expect(asyncJson.stats().workers).toBe(3);
+    }, 15000);
+
+    it("should not leak workers with rapid failures", async () => {
+      asyncJson = new AsyncJson(2);
+
+      expect(asyncJson.stats().workers).toBe(2);
+
+      // Rapid succession of errors
+      for (let i = 0; i < 10; i++) {
+        const promise = i % 2 === 0
+          ? (asyncJson as any).__TEST_crashWorker__()
+          : (asyncJson as any).__TEST_uncaughtErrorWorker__();
+
+        await expect(promise).rejects.toThrow();
+
+        const count = asyncJson.stats().workers;
+        expect(count).toBeLessThanOrEqual(2);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(asyncJson.stats().workers).toBe(2);
+    }, 20000);
+
+    it("should maintain exact pool size after complex scenario", async () => {
+      asyncJson = new AsyncJson(4);
+
+      const checkExactCount = () => {
+        expect(asyncJson.stats().workers).toBe(4);
+      };
+
+      checkExactCount();
+
+      // Parallel crashes
+      await Promise.allSettled([
+        (asyncJson as any).__TEST_crashWorker__(),
+        (asyncJson as any).__TEST_crashWorker__(),
+        (asyncJson as any).__TEST_uncaughtErrorWorker__(),
+        (asyncJson as any).__TEST_uncaughtErrorWorker__(),
+      ]);
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      checkExactCount();
+
+      // Normal operations
+      await Promise.all([
+        asyncJson.parse('{"x": 1}'),
+        asyncJson.stringify({ y: 2 }),
+        asyncJson.parse('{"z": 3}'),
+      ]);
+
+      checkExactCount();
+
+      // Another round of failures
+      await expect((asyncJson as any).__TEST_crashWorker__()).rejects.toThrow();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      checkExactCount();
+
+      // Final operations
+      await asyncJson.parse('{"final": true}');
+      checkExactCount();
+    }, 20000);
+
+    it("should not double-spawn on error+exit events", async () => {
+      asyncJson = new AsyncJson(1);
+
+      expect(asyncJson.stats().workers).toBe(1);
+
+      // Trigger uncaught error (fires both error and exit events)
+      await expect((asyncJson as any).__TEST_uncaughtErrorWorker__()).rejects.toThrow();
+
+      // Wait for any spawning to complete
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      // Should still be exactly 1, not 2
+      expect(asyncJson.stats().workers).toBe(1);
+    }, 10000);
+  });
 });
