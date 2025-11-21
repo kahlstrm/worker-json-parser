@@ -1,6 +1,9 @@
 // benchmark.ts - Compare AsyncJson worker pool vs blocking JSON operations
 import { AsyncJson } from "../AsyncJson.ts";
-import { getDefaultWorkerCounts } from "./benchUtils.ts";
+import {
+  getDefaultWorkerCounts,
+  getObjSizeEstimateInMB,
+} from "./benchUtils.ts";
 
 interface BenchmarkResult {
   name: string;
@@ -30,6 +33,21 @@ function generateMediumObject() {
 function generateLargeObject() {
   return {
     data: Array.from({ length: 10000 }, (_, i) => ({
+      id: i,
+      value: Math.random(),
+      timestamp: Date.now(),
+      nested: {
+        a: i * 2,
+        b: i * 3,
+        c: `string_${i}`,
+      },
+    })),
+  };
+}
+
+function generateVeryLargeObject() {
+  return {
+    data: Array.from({ length: 100000 }, (_, i) => ({
       id: i,
       value: Math.random(),
       timestamp: Date.now(),
@@ -152,6 +170,47 @@ async function benchmarkSequential(
   }
 }
 
+export async function collectResults(
+  operation: "parse" | "stringify",
+  testData: any,
+  iterations: number,
+  workerCounts: number[],
+): Promise<BenchmarkResult[]> {
+  const results: BenchmarkResult[] = [];
+  results.push(await benchmarkBlocking(operation, testData, iterations));
+
+  for (const workers of workerCounts) {
+    results.push(
+      await benchmarkAsyncJson(operation, testData, iterations, workers),
+    );
+  }
+
+  return results;
+}
+
+export async function runStandardScenario(
+  label: string,
+  testData: any,
+  iterations: number,
+  workerCounts: number[],
+) {
+  const stringifyResults = await collectResults(
+    "stringify",
+    testData,
+    iterations,
+    workerCounts,
+  );
+  printResults(`${label} Stringify Results`, stringifyResults);
+
+  const parseResults = await collectResults(
+    "parse",
+    testData,
+    iterations,
+    workerCounts,
+  );
+  printResults(`${label} Parse Results`, parseResults);
+}
+
 function printResults(title: string, results: BenchmarkResult[]) {
   console.log(`\n${"=".repeat(80)}`);
   console.log(title);
@@ -228,88 +287,47 @@ async function runBenchmarks() {
   const smallObj = generateSmallObject();
 
   console.log("\n📊 Test 1: Small Objects (~50 bytes, 1000 operations)");
-  const smallResults: BenchmarkResult[] = [];
-
-  smallResults.push(await benchmarkBlocking("stringify", smallObj, iterations));
-  for (const workers of workerCounts) {
-    smallResults.push(
-      await benchmarkAsyncJson("stringify", smallObj, iterations, workers),
-    );
-  }
-
-  printResults("Small Object Stringify Results", smallResults);
-
-  const smallParseResults: BenchmarkResult[] = [];
-  smallParseResults.push(
-    await benchmarkBlocking("parse", smallObj, iterations),
-  );
-  for (const workers of workerCounts) {
-    smallParseResults.push(
-      await benchmarkAsyncJson("parse", smallObj, iterations, workers),
-    );
-  }
-
-  printResults("Small Object Parse Results", smallParseResults);
+  await runStandardScenario("Small Object", smallObj, iterations, workerCounts);
 
   // Medium objects
   const mediumObj = generateMediumObject();
+  const mediumObjSize = getObjSizeEstimateInMB(mediumObj);
 
-  console.log("\n📊 Test 2: Medium Objects (~100KB, 1000 operations)");
-  const mediumResults: BenchmarkResult[] = [];
-
-  mediumResults.push(
-    await benchmarkBlocking("stringify", mediumObj, iterations),
+  console.log(
+    `\n📊 Test 2: Medium Objects (${mediumObjSize}, 1000 operations)`,
   );
-  for (const workers of workerCounts) {
-    mediumResults.push(
-      await benchmarkAsyncJson("stringify", mediumObj, iterations, workers),
-    );
-  }
-
-  printResults("Medium Object Stringify Results", mediumResults);
-
-  const mediumParseResults: BenchmarkResult[] = [];
-  mediumParseResults.push(
-    await benchmarkBlocking("parse", mediumObj, iterations),
+  await runStandardScenario(
+    "Medium Object",
+    mediumObj,
+    iterations,
+    workerCounts,
   );
-  for (const workers of workerCounts) {
-    mediumParseResults.push(
-      await benchmarkAsyncJson("parse", mediumObj, iterations, workers),
-    );
-  }
-
-  printResults("Medium Object Parse Results", mediumParseResults);
 
   // Large objects
   const largeObj = generateLargeObject();
+  const largeObjSize = getObjSizeEstimateInMB(largeObj);
 
-  console.log("\n📊 Test 3: Large Objects (~1MB, 1000 operations)");
-  const largeResults: BenchmarkResult[] = [];
+  console.log(`\n📊 Test 3: Large Objects (${largeObjSize}, 1000 operations)`);
+  await runStandardScenario("Large Object", largeObj, iterations, workerCounts);
 
-  largeResults.push(await benchmarkBlocking("stringify", largeObj, iterations));
-  for (const workers of workerCounts) {
-    largeResults.push(
-      await benchmarkAsyncJson("stringify", largeObj, iterations, workers),
-    );
-  }
+  // Very large objects (~10MB)
+  const veryLargeObj = generateVeryLargeObject();
+  const veryLargeObjSize = getObjSizeEstimateInMB(veryLargeObj);
+  const veryLargeIterations = 100;
 
-  printResults("Large Object Stringify Results", largeResults);
-
-  const largeParseResults: BenchmarkResult[] = [];
-  largeParseResults.push(
-    await benchmarkBlocking("parse", largeObj, iterations),
+  console.log(
+    `\n📊 Test 4: Very Large Objects (${veryLargeObjSize}, ${veryLargeIterations} operations)`,
   );
-  for (const workers of workerCounts) {
-    largeParseResults.push(
-      await benchmarkAsyncJson("parse", largeObj, iterations, workers),
-    );
-  }
-
-  printResults("Large Object Parse Results", largeParseResults);
+  await runStandardScenario(
+    "Very Large Object",
+    veryLargeObj,
+    veryLargeIterations,
+    workerCounts,
+  );
 
   // Sequential vs Concurrent
   console.log(
-    "\n📊 Test 4: Sequential vs Concurrent (Medium objects, 1000 operations)",
+    "\n📊 Test 5: Sequential vs Concurrent (Medium objects, 1000 operations)",
   );
   const seqConcResults: BenchmarkResult[] = [];
 
@@ -331,7 +349,7 @@ async function runBenchmarks() {
   printResults("Sequential vs Concurrent Results", seqConcResults);
 
   console.log(
-    "\n📊 Test 5: Sequential vs Concurrent PARSE (Medium objects, 1000 operations)",
+    "\n📊 Test 6: Sequential vs Concurrent PARSE (Medium objects, 1000 operations)",
   );
   const seqConcParseResults: BenchmarkResult[] = [];
 

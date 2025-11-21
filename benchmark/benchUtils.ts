@@ -16,3 +16,7 @@ export function getDefaultWorkerCounts(): number[] {
     (os.availableParallelism?.() ?? os.cpus()?.length ?? 1) || 1;
   return powersOfTwoUpTo(available);
 }
+
+export function getObjSizeEstimateInMB(obj: unknown): string {
+  return `~${(JSON.stringify(obj).length / 1024 / 1024).toFixed(2)} MB`;
+}
