@@ -4,6 +4,7 @@ import {
   getDefaultWorkerCounts,
   getObjSizeEstimateInMB,
 } from "./benchUtils.ts";
+import { runNaiveWorker } from "./naiveWorker.ts";
 
 interface BenchmarkResult {
   name: string;
@@ -92,6 +93,38 @@ async function benchmarkBlocking(
   };
 }
 
+// Naive: spawn a brand new worker per operation
+async function benchmarkNaiveWorker(
+  operation: "parse" | "stringify",
+  testData: any,
+  iterations: number,
+): Promise<BenchmarkResult> {
+  const startTime = performance.now();
+
+  if (operation === "parse") {
+    const jsonString = JSON.stringify(testData);
+    for (let i = 0; i < iterations; i++) {
+      await runNaiveWorker("parse", jsonString);
+    }
+  } else {
+    for (let i = 0; i < iterations; i++) {
+      await runNaiveWorker("stringify", testData);
+    }
+  }
+
+  const durationMs = performance.now() - startTime;
+  const opsPerSecond = (iterations / durationMs) * 1000;
+  const avgLatencyMs = durationMs / iterations;
+
+  return {
+    name: "Naive new worker per op",
+    operations: iterations,
+    durationMs,
+    opsPerSecond,
+    avgLatencyMs,
+  };
+}
+
 // AsyncJson operations
 async function benchmarkAsyncJson(
   operation: "parse" | "stringify",
@@ -132,44 +165,6 @@ async function benchmarkAsyncJson(
   }
 }
 
-// Sequential benchmark (one at a time)
-async function benchmarkSequential(
-  operation: "parse" | "stringify",
-  testData: any,
-  iterations: number,
-  workerCount: number,
-): Promise<BenchmarkResult> {
-  const asyncJson = new AsyncJson(workerCount);
-  const startTime = performance.now();
-
-  try {
-    if (operation === "parse") {
-      const jsonString = JSON.stringify(testData);
-      for (let i = 0; i < iterations; i++) {
-        await asyncJson.parse(jsonString);
-      }
-    } else {
-      for (let i = 0; i < iterations; i++) {
-        await asyncJson.stringify(testData);
-      }
-    }
-
-    const durationMs = performance.now() - startTime;
-    const opsPerSecond = (iterations / durationMs) * 1000;
-    const avgLatencyMs = durationMs / iterations;
-
-    return {
-      name: `AsyncJson Sequential (${workerCount} worker${workerCount > 1 ? "s" : ""}) ${operation}`,
-      operations: iterations,
-      durationMs,
-      opsPerSecond,
-      avgLatencyMs,
-    };
-  } finally {
-    await asyncJson.close();
-  }
-}
-
 export async function collectResults(
   operation: "parse" | "stringify",
   testData: any,
@@ -178,6 +173,7 @@ export async function collectResults(
 ): Promise<BenchmarkResult[]> {
   const results: BenchmarkResult[] = [];
   results.push(await benchmarkBlocking(operation, testData, iterations));
+  results.push(await benchmarkNaiveWorker(operation, testData, iterations));
 
   for (const workers of workerCounts) {
     results.push(
@@ -324,51 +320,6 @@ async function runBenchmarks() {
     veryLargeIterations,
     workerCounts,
   );
-
-  // Sequential vs Concurrent
-  console.log(
-    "\n📊 Test 5: Sequential vs Concurrent (Medium objects, 1000 operations)",
-  );
-  const seqConcResults: BenchmarkResult[] = [];
-
-  seqConcResults.push(
-    await benchmarkBlocking("stringify", mediumObj, iterations),
-  );
-  for (const workers of workerCounts) {
-    seqConcResults.push(
-      await benchmarkSequential("stringify", mediumObj, iterations, workers),
-    );
-  }
-
-  for (const workers of workerCounts) {
-    seqConcResults.push(
-      await benchmarkAsyncJson("stringify", mediumObj, iterations, workers),
-    );
-  }
-
-  printResults("Sequential vs Concurrent Results", seqConcResults);
-
-  console.log(
-    "\n📊 Test 6: Sequential vs Concurrent PARSE (Medium objects, 1000 operations)",
-  );
-  const seqConcParseResults: BenchmarkResult[] = [];
-
-  seqConcParseResults.push(
-    await benchmarkBlocking("parse", mediumObj, iterations),
-  );
-  for (const workers of workerCounts) {
-    seqConcParseResults.push(
-      await benchmarkSequential("parse", mediumObj, iterations, workers),
-    );
-  }
-
-  for (const workers of workerCounts) {
-    seqConcParseResults.push(
-      await benchmarkAsyncJson("parse", mediumObj, iterations, workers),
-    );
-  }
-
-  printResults("Sequential vs Concurrent Parse Results", seqConcParseResults);
 
   console.log("\n✅ Benchmark complete!");
 }
