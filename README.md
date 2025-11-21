@@ -62,7 +62,7 @@ node benchmark/benchmark.ts
 
 The `naiveWorker` baseline spawns a brand-new worker per operation (worst practice); see Node.js guidance on avoiding event-loop blocking for heavy JSON work: https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop#blocking-the-event-loop-json-dos
 
-Raw output from 2025-11-21 on `pannu` (AMD Ryzen 9 5950X 16C/32T, Node v22.20.0):
+Raw output from 2025-11-21 on `pannu` (AMD Ryzen 9 5950X 16C/32T, Node v24.11.0):
 
 ```
 AsyncJson Worker Pool Benchmark
@@ -80,25 +80,25 @@ Small Object Stringify Results
 ================================================================================
 Test Name                                     Ops   Time(ms)      Ops/sec    Avg(ms)
 --------------------------------------------------------------------------------
-Blocking stringify                           1000       0.21   4874909.81     0.0002
-Naive new worker per op                      1000   23474.39        42.60    23.4744
-AsyncJson (1 worker) stringify               1000      44.78     22332.20     0.0448
-AsyncJson (2 workers) stringify              1000      32.51     30764.30     0.0325
-AsyncJson (4 workers) stringify              1000      32.19     31068.91     0.0322
-AsyncJson (8 workers) stringify              1000      31.26     31993.21     0.0313
-AsyncJson (16 workers) stringify             1000      57.49     17394.71     0.0575
-AsyncJson (32 workers) stringify             1000      68.93     14507.00     0.0689
+Blocking stringify                           1000       0.22   4494563.83     0.0002
+Naive new worker per op                      1000   20486.26        48.81    20.4863
+AsyncJson (1 worker) stringify               1000      40.07     24958.29     0.0401
+AsyncJson (2 workers) stringify              1000      28.07     35629.26     0.0281
+AsyncJson (4 workers) stringify              1000      27.35     36568.01     0.0273
+AsyncJson (8 workers) stringify              1000      41.46     24120.10     0.0415
+AsyncJson (16 workers) stringify             1000      40.46     24714.47     0.0405
+AsyncJson (32 workers) stringify             1000      69.77     14332.05     0.0698
 --------------------------------------------------------------------------------
-Fastest: Blocking stringify (4874909.81 ops/sec)
+Fastest: Blocking stringify (4494563.83 ops/sec)
 
 Relative Performance:
 Blocking stringify                       ██████████████████████████████████████████████████ 100.0%
 Naive new worker per op                   0.0%
-AsyncJson (1 worker) stringify            0.5%
-AsyncJson (2 workers) stringify           0.6%
-AsyncJson (4 workers) stringify           0.6%
-AsyncJson (8 workers) stringify           0.7%
-AsyncJson (16 workers) stringify          0.4%
+AsyncJson (1 worker) stringify            0.6%
+AsyncJson (2 workers) stringify           0.8%
+AsyncJson (4 workers) stringify           0.8%
+AsyncJson (8 workers) stringify           0.5%
+AsyncJson (16 workers) stringify          0.5%
 AsyncJson (32 workers) stringify          0.3%
 
 ================================================================================
@@ -106,26 +106,26 @@ Small Object Parse Results
 ================================================================================
 Test Name                                     Ops   Time(ms)      Ops/sec    Avg(ms)
 --------------------------------------------------------------------------------
-Blocking parse                               1000       0.32   3121848.88     0.0003
-Naive new worker per op                      1000   23443.41        42.66    23.4434
-AsyncJson (1 worker) parse                   1000      40.98     24401.35     0.0410
-AsyncJson (2 workers) parse                  1000      30.27     33035.36     0.0303
-AsyncJson (4 workers) parse                  1000      29.23     34205.99     0.0292
-AsyncJson (8 workers) parse                  1000      30.93     32333.70     0.0309
-AsyncJson (16 workers) parse                 1000      40.95     24418.29     0.0410
-AsyncJson (32 workers) parse                 1000      66.48     15042.56     0.0665
+Blocking parse                               1000       0.26   3795325.68     0.0003
+Naive new worker per op                      1000   20630.41        48.47    20.6304
+AsyncJson (1 worker) parse                   1000      38.15     26215.63     0.0381
+AsyncJson (2 workers) parse                  1000      29.88     33464.44     0.0299
+AsyncJson (4 workers) parse                  1000      26.85     37239.12     0.0269
+AsyncJson (8 workers) parse                  1000      30.43     32860.64     0.0304
+AsyncJson (16 workers) parse                 1000      41.57     24054.86     0.0416
+AsyncJson (32 workers) parse                 1000      67.41     14833.74     0.0674
 --------------------------------------------------------------------------------
-Fastest: Blocking parse (3121848.88 ops/sec)
+Fastest: Blocking parse (3795325.68 ops/sec)
 
 Relative Performance:
 Blocking parse                           ██████████████████████████████████████████████████ 100.0%
 Naive new worker per op                   0.0%
-AsyncJson (1 worker) parse                0.8%
-AsyncJson (2 workers) parse               1.1%
-AsyncJson (4 workers) parse               1.1%
-AsyncJson (8 workers) parse               1.0%
-AsyncJson (16 workers) parse              0.8%
-AsyncJson (32 workers) parse              0.5%
+AsyncJson (1 worker) parse                0.7%
+AsyncJson (2 workers) parse               0.9%
+AsyncJson (4 workers) parse               1.0%
+AsyncJson (8 workers) parse               0.9%
+AsyncJson (16 workers) parse              0.6%
+AsyncJson (32 workers) parse              0.4%
 
 📊 Test 2: Medium Objects (~0.13 MB, 1000 operations)
 
@@ -134,52 +134,52 @@ Medium Object Stringify Results
 ================================================================================
 Test Name                                     Ops   Time(ms)      Ops/sec    Avg(ms)
 --------------------------------------------------------------------------------
-Blocking stringify                           1000     378.68      2640.72     0.3787
-Naive new worker per op                      1000   24891.63        40.17    24.8916
-AsyncJson (1 worker) stringify               1000    1650.95       605.71     1.6510
-AsyncJson (2 workers) stringify              1000     848.12      1179.08     0.8481
-AsyncJson (4 workers) stringify              1000     572.99      1745.22     0.5730
-AsyncJson (8 workers) stringify              1000     561.29      1781.62     0.5613
-AsyncJson (16 workers) stringify             1000     545.88      1831.91     0.5459
-AsyncJson (32 workers) stringify             1000     613.19      1630.82     0.6132
+Blocking stringify                           1000     268.27      3727.64     0.2683
+Naive new worker per op                      1000   22408.47        44.63    22.4085
+AsyncJson (1 worker) stringify               1000    1539.00       649.77     1.5390
+AsyncJson (2 workers) stringify              1000     783.01      1277.12     0.7830
+AsyncJson (4 workers) stringify              1000     536.72      1863.17     0.5367
+AsyncJson (8 workers) stringify              1000     517.80      1931.26     0.5178
+AsyncJson (16 workers) stringify             1000     551.79      1812.29     0.5518
+AsyncJson (32 workers) stringify             1000     596.93      1675.23     0.5969
 --------------------------------------------------------------------------------
-Fastest: Blocking stringify (2640.72 ops/sec)
+Fastest: Blocking stringify (3727.64 ops/sec)
 
 Relative Performance:
 Blocking stringify                       ██████████████████████████████████████████████████ 100.0%
-Naive new worker per op                   1.5%
-AsyncJson (1 worker) stringify           ███████████ 22.9%
-AsyncJson (2 workers) stringify          ██████████████████████ 44.7%
-AsyncJson (4 workers) stringify          █████████████████████████████████ 66.1%
-AsyncJson (8 workers) stringify          █████████████████████████████████ 67.5%
-AsyncJson (16 workers) stringify         ██████████████████████████████████ 69.4%
-AsyncJson (32 workers) stringify         ██████████████████████████████ 61.8%
+Naive new worker per op                   1.2%
+AsyncJson (1 worker) stringify           ████████ 17.4%
+AsyncJson (2 workers) stringify          █████████████████ 34.3%
+AsyncJson (4 workers) stringify          ████████████████████████ 50.0%
+AsyncJson (8 workers) stringify          █████████████████████████ 51.8%
+AsyncJson (16 workers) stringify         ████████████████████████ 48.6%
+AsyncJson (32 workers) stringify         ██████████████████████ 44.9%
 
 ================================================================================
 Medium Object Parse Results
 ================================================================================
 Test Name                                     Ops   Time(ms)      Ops/sec    Avg(ms)
 --------------------------------------------------------------------------------
-Blocking parse                               1000     491.07      2036.37     0.4911
-Naive new worker per op                      1000   25236.76        39.62    25.2368
-AsyncJson (1 worker) parse                   1000    1914.95       522.21     1.9149
-AsyncJson (2 workers) parse                  1000    1055.25       947.65     1.0552
-AsyncJson (4 workers) parse                  1000     814.59      1227.61     0.8146
-AsyncJson (8 workers) parse                  1000     928.37      1077.16     0.9284
-AsyncJson (16 workers) parse                 1000     840.87      1189.24     0.8409
-AsyncJson (32 workers) parse                 1000     860.27      1162.42     0.8603
+Blocking parse                               1000     515.91      1938.33     0.5159
+Naive new worker per op                      1000   22872.83        43.72    22.8728
+AsyncJson (1 worker) parse                   1000    1950.22       512.76     1.9502
+AsyncJson (2 workers) parse                  1000    1020.25       980.15     1.0203
+AsyncJson (4 workers) parse                  1000     845.10      1183.29     0.8451
+AsyncJson (8 workers) parse                  1000     826.77      1209.53     0.8268
+AsyncJson (16 workers) parse                 1000     820.72      1218.44     0.8207
+AsyncJson (32 workers) parse                 1000     856.59      1167.42     0.8566
 --------------------------------------------------------------------------------
-Fastest: Blocking parse (2036.37 ops/sec)
+Fastest: Blocking parse (1938.33 ops/sec)
 
 Relative Performance:
 Blocking parse                           ██████████████████████████████████████████████████ 100.0%
-Naive new worker per op                   1.9%
-AsyncJson (1 worker) parse               ████████████ 25.6%
-AsyncJson (2 workers) parse              ███████████████████████ 46.5%
-AsyncJson (4 workers) parse              ██████████████████████████████ 60.3%
-AsyncJson (8 workers) parse              ██████████████████████████ 52.9%
-AsyncJson (16 workers) parse             █████████████████████████████ 58.4%
-AsyncJson (32 workers) parse             ████████████████████████████ 57.1%
+Naive new worker per op                  █ 2.3%
+AsyncJson (1 worker) parse               █████████████ 26.5%
+AsyncJson (2 workers) parse              █████████████████████████ 50.6%
+AsyncJson (4 workers) parse              ██████████████████████████████ 61.0%
+AsyncJson (8 workers) parse              ███████████████████████████████ 62.4%
+AsyncJson (16 workers) parse             ███████████████████████████████ 62.9%
+AsyncJson (32 workers) parse             ██████████████████████████████ 60.2%
 
 📊 Test 3: Large Objects (~1.08 MB, 1000 operations)
 
@@ -188,52 +188,52 @@ Large Object Stringify Results
 ================================================================================
 Test Name                                     Ops   Time(ms)      Ops/sec    Avg(ms)
 --------------------------------------------------------------------------------
-Blocking stringify                           1000    4212.61       237.38     4.2126
-Naive new worker per op                      1000   41586.69        24.05    41.5867
-AsyncJson (1 worker) stringify               1000   15313.43        65.30    15.3134
-AsyncJson (2 workers) stringify              1000    8467.77       118.09     8.4678
-AsyncJson (4 workers) stringify              1000    4914.00       203.50     4.9140
-AsyncJson (8 workers) stringify              1000    5011.24       199.55     5.0112
-AsyncJson (16 workers) stringify             1000    5039.34       198.44     5.0393
-AsyncJson (32 workers) stringify             1000    4899.28       204.11     4.8993
+Blocking stringify                           1000    3693.36       270.76     3.6934
+Naive new worker per op                      1000   38479.10        25.99    38.4791
+AsyncJson (1 worker) stringify               1000   14654.03        68.24    14.6540
+AsyncJson (2 workers) stringify              1000    8025.26       124.61     8.0253
+AsyncJson (4 workers) stringify              1000    4745.83       210.71     4.7458
+AsyncJson (8 workers) stringify              1000    4817.64       207.57     4.8176
+AsyncJson (16 workers) stringify             1000    4868.06       205.42     4.8681
+AsyncJson (32 workers) stringify             1000    4771.60       209.57     4.7716
 --------------------------------------------------------------------------------
-Fastest: Blocking stringify (237.38 ops/sec)
+Fastest: Blocking stringify (270.76 ops/sec)
 
 Relative Performance:
 Blocking stringify                       ██████████████████████████████████████████████████ 100.0%
-Naive new worker per op                  █████ 10.1%
-AsyncJson (1 worker) stringify           █████████████ 27.5%
-AsyncJson (2 workers) stringify          ████████████████████████ 49.7%
-AsyncJson (4 workers) stringify          ██████████████████████████████████████████ 85.7%
-AsyncJson (8 workers) stringify          ██████████████████████████████████████████ 84.1%
-AsyncJson (16 workers) stringify         █████████████████████████████████████████ 83.6%
-AsyncJson (32 workers) stringify         ██████████████████████████████████████████ 86.0%
+Naive new worker per op                  ████ 9.6%
+AsyncJson (1 worker) stringify           ████████████ 25.2%
+AsyncJson (2 workers) stringify          ███████████████████████ 46.0%
+AsyncJson (4 workers) stringify          ██████████████████████████████████████ 77.8%
+AsyncJson (8 workers) stringify          ██████████████████████████████████████ 76.7%
+AsyncJson (16 workers) stringify         █████████████████████████████████████ 75.9%
+AsyncJson (32 workers) stringify         ██████████████████████████████████████ 77.4%
 
 ================================================================================
 Large Object Parse Results
 ================================================================================
 Test Name                                     Ops   Time(ms)      Ops/sec    Avg(ms)
 --------------------------------------------------------------------------------
-Blocking parse                               1000    4802.42       208.23     4.8024
-Naive new worker per op                      1000   43523.77        22.98    43.5238
-AsyncJson (1 worker) parse                   1000   17281.88        57.86    17.2819
-AsyncJson (2 workers) parse                  1000    9796.73       102.07     9.7967
-AsyncJson (4 workers) parse                  1000    7972.09       125.44     7.9721
-AsyncJson (8 workers) parse                  1000    8323.14       120.15     8.3231
-AsyncJson (16 workers) parse                 1000    8379.82       119.33     8.3798
-AsyncJson (32 workers) parse                 1000    8247.25       121.25     8.2472
+Blocking parse                               1000    4521.73       221.15     4.5217
+Naive new worker per op                      1000   38506.53        25.97    38.5065
+AsyncJson (1 worker) parse                   1000   15789.65        63.33    15.7897
+AsyncJson (2 workers) parse                  1000    9051.43       110.48     9.0514
+AsyncJson (4 workers) parse                  1000    6898.08       144.97     6.8981
+AsyncJson (8 workers) parse                  1000    6898.35       144.96     6.8983
+AsyncJson (16 workers) parse                 1000    6898.09       144.97     6.8981
+AsyncJson (32 workers) parse                 1000    6900.38       144.92     6.9004
 --------------------------------------------------------------------------------
-Fastest: Blocking parse (208.23 ops/sec)
+Fastest: Blocking parse (221.15 ops/sec)
 
 Relative Performance:
 Blocking parse                           ██████████████████████████████████████████████████ 100.0%
-Naive new worker per op                  █████ 11.0%
-AsyncJson (1 worker) parse               █████████████ 27.8%
-AsyncJson (2 workers) parse              ████████████████████████ 49.0%
-AsyncJson (4 workers) parse              ██████████████████████████████ 60.2%
-AsyncJson (8 workers) parse              ████████████████████████████ 57.7%
-AsyncJson (16 workers) parse             ████████████████████████████ 57.3%
-AsyncJson (32 workers) parse             █████████████████████████████ 58.2%
+Naive new worker per op                  █████ 11.7%
+AsyncJson (1 worker) parse               ██████████████ 28.6%
+AsyncJson (2 workers) parse              ████████████████████████ 50.0%
+AsyncJson (4 workers) parse              ████████████████████████████████ 65.6%
+AsyncJson (8 workers) parse              ████████████████████████████████ 65.5%
+AsyncJson (16 workers) parse             ████████████████████████████████ 65.6%
+AsyncJson (32 workers) parse             ████████████████████████████████ 65.5%
 
 📊 Test 4: Very Large Objects (~11.17 MB, 100 operations)
 
@@ -242,52 +242,52 @@ Very Large Object Stringify Results
 ================================================================================
 Test Name                                     Ops   Time(ms)      Ops/sec    Avg(ms)
 --------------------------------------------------------------------------------
-Blocking stringify                            100    4529.86        22.08    45.2986
-Naive new worker per op                       100   21481.97         4.66   214.8197
-AsyncJson (1 worker) stringify                100   16189.40         6.18   161.8940
-AsyncJson (2 workers) stringify               100    8690.75        11.51    86.9075
-AsyncJson (4 workers) stringify               100    5628.04        17.77    56.2804
-AsyncJson (8 workers) stringify               100    5548.42        18.02    55.4842
-AsyncJson (16 workers) stringify              100    5481.68        18.24    54.8168
-AsyncJson (32 workers) stringify              100    5493.37        18.20    54.9337
+Blocking stringify                            100    3831.57        26.10    38.3157
+Naive new worker per op                       100   19345.01         5.17   193.4501
+AsyncJson (1 worker) stringify                100   14415.92         6.94   144.1592
+AsyncJson (2 workers) stringify               100    7884.78        12.68    78.8478
+AsyncJson (4 workers) stringify               100    5174.75        19.32    51.7475
+AsyncJson (8 workers) stringify               100    5217.46        19.17    52.1746
+AsyncJson (16 workers) stringify              100    5163.99        19.36    51.6399
+AsyncJson (32 workers) stringify              100    5381.47        18.58    53.8147
 --------------------------------------------------------------------------------
-Fastest: Blocking stringify (22.08 ops/sec)
+Fastest: Blocking stringify (26.10 ops/sec)
 
 Relative Performance:
 Blocking stringify                       ██████████████████████████████████████████████████ 100.0%
-Naive new worker per op                  ██████████ 21.1%
-AsyncJson (1 worker) stringify           █████████████ 28.0%
-AsyncJson (2 workers) stringify          ██████████████████████████ 52.1%
-AsyncJson (4 workers) stringify          ████████████████████████████████████████ 80.5%
-AsyncJson (8 workers) stringify          ████████████████████████████████████████ 81.6%
-AsyncJson (16 workers) stringify         █████████████████████████████████████████ 82.6%
-AsyncJson (32 workers) stringify         █████████████████████████████████████████ 82.5%
+Naive new worker per op                  █████████ 19.8%
+AsyncJson (1 worker) stringify           █████████████ 26.6%
+AsyncJson (2 workers) stringify          ████████████████████████ 48.6%
+AsyncJson (4 workers) stringify          █████████████████████████████████████ 74.0%
+AsyncJson (8 workers) stringify          ████████████████████████████████████ 73.4%
+AsyncJson (16 workers) stringify         █████████████████████████████████████ 74.2%
+AsyncJson (32 workers) stringify         ███████████████████████████████████ 71.2%
 
 ================================================================================
 Very Large Object Parse Results
 ================================================================================
 Test Name                                     Ops   Time(ms)      Ops/sec    Avg(ms)
 --------------------------------------------------------------------------------
-Blocking parse                                100    7264.98        13.76    72.6498
-Naive new worker per op                       100   23969.21         4.17   239.6921
-AsyncJson (1 worker) parse                    100   18549.52         5.39   185.4952
-AsyncJson (2 workers) parse                   100   10284.05         9.72   102.8405
-AsyncJson (4 workers) parse                   100    9432.13        10.60    94.3213
-AsyncJson (8 workers) parse                   100    9463.34        10.57    94.6334
-AsyncJson (16 workers) parse                  100    9324.11        10.72    93.2411
-AsyncJson (32 workers) parse                  100    9176.83        10.90    91.7683
+Blocking parse                                100    4267.64        23.43    42.6764
+Naive new worker per op                       100   19614.27         5.10   196.1427
+AsyncJson (1 worker) parse                    100   15694.85         6.37   156.9485
+AsyncJson (2 workers) parse                   100    8567.91        11.67    85.6791
+AsyncJson (4 workers) parse                   100    7547.74        13.25    75.4774
+AsyncJson (8 workers) parse                   100    7538.07        13.27    75.3807
+AsyncJson (16 workers) parse                  100    7619.11        13.12    76.1911
+AsyncJson (32 workers) parse                  100    7747.39        12.91    77.4739
 --------------------------------------------------------------------------------
-Fastest: Blocking parse (13.76 ops/sec)
+Fastest: Blocking parse (23.43 ops/sec)
 
 Relative Performance:
 Blocking parse                           ██████████████████████████████████████████████████ 100.0%
-Naive new worker per op                  ███████████████ 30.3%
-AsyncJson (1 worker) parse               ███████████████████ 39.2%
-AsyncJson (2 workers) parse              ███████████████████████████████████ 70.6%
-AsyncJson (4 workers) parse              ██████████████████████████████████████ 77.0%
-AsyncJson (8 workers) parse              ██████████████████████████████████████ 76.8%
-AsyncJson (16 workers) parse             ██████████████████████████████████████ 77.9%
-AsyncJson (32 workers) parse             ███████████████████████████████████████ 79.2%
+Naive new worker per op                  ██████████ 21.8%
+AsyncJson (1 worker) parse               █████████████ 27.2%
+AsyncJson (2 workers) parse              ████████████████████████ 49.8%
+AsyncJson (4 workers) parse              ████████████████████████████ 56.5%
+AsyncJson (8 workers) parse              ████████████████████████████ 56.6%
+AsyncJson (16 workers) parse             ████████████████████████████ 56.0%
+AsyncJson (32 workers) parse             ███████████████████████████ 55.1%
 
 ✅ Benchmark complete!
 ```
