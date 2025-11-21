@@ -60,7 +60,7 @@ Run locally (Node 22+):
 node benchmark/benchmark.ts
 ```
 
-The `naiveWorker` baseline spawns a brand-new worker per operation (worst practice); see Node.js guidance on avoiding event-loop blocking for heavy JSON work: https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop#blocking-the-event-loop-json-dos
+The `naiveWorker` baseline spawns a brand-new worker per operation (worst practice); see Node.js guidance on avoiding event-loop blocking for heavy JSON work: https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop#blocking-the-event-loop-json-dos. To avoid fork-bombing, the `naiveWorker` is run sequentially instead of concurrently.
 
 Raw output from 2025-11-21 on `pannu` (AMD Ryzen 9 5950X 16C/32T, Node v24.11.0):
 
