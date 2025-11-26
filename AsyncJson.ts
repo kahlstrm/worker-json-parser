@@ -90,8 +90,6 @@ class AsyncJson {
   private taskQueue: TaskQueueItem[] = [];
   private workerTaskMap: Map<Worker, WorkerTaskHandlers> = new Map();
   private isClosing: boolean = false;
-  private timedOutWorkers: WeakSet<Worker> = new WeakSet();
-  private erroredWorkers: WeakSet<Worker> = new WeakSet();
 
   constructor(
     numThreads = 1,
@@ -125,37 +123,23 @@ class AsyncJson {
 
     worker.on("error", (err) => {
       console.error(`Worker error: ${err.message}`);
-      this.erroredWorkers.add(worker);
       const promiseHandlers = this.workerTaskMap.get(worker);
       if (promiseHandlers) {
         if (promiseHandlers.timeoutId) clearTimeout(promiseHandlers.timeoutId);
         promiseHandlers.reject(err);
         this.workerTaskMap.delete(worker);
       }
-      this.replaceWorker(worker);
     });
 
     worker.on("exit", (code) => {
-      const timedOut = this.timedOutWorkers.has(worker);
-      const errored = this.erroredWorkers.has(worker);
-      if (timedOut) this.timedOutWorkers.delete(worker);
-      if (errored) this.erroredWorkers.delete(worker);
-
-      if (code !== 0 && !this.isClosing && !timedOut && !errored) {
+      const promiseHandlers = this.workerTaskMap.get(worker);
+      if (promiseHandlers) {
         console.error(`Worker stopped unexpectedly with exit code ${code}`);
-        const promiseHandlers = this.workerTaskMap.get(worker);
-        if (promiseHandlers) {
-          if (promiseHandlers.timeoutId)
-            clearTimeout(promiseHandlers.timeoutId);
-          promiseHandlers.reject(new Error(`Worker exited with code ${code}`));
-          this.workerTaskMap.delete(worker);
-        }
+        if (promiseHandlers.timeoutId) clearTimeout(promiseHandlers.timeoutId);
+        promiseHandlers.reject(new Error(`Worker exited with code ${code}`));
+        this.workerTaskMap.delete(worker);
       }
-      if (code !== 0 && !timedOut && !errored) {
-        this.replaceWorker(worker);
-      } else {
-        this.removeWorker(worker);
-      }
+      this.replaceWorker(worker);
     });
 
     return worker;
@@ -224,9 +208,7 @@ class AsyncJson {
         if (!this.workerTaskMap.has(worker)) return;
         this.workerTaskMap.delete(worker);
         reject(new Error("Worker task timed out"));
-        this.timedOutWorkers.add(worker);
         worker.terminate();
-        this.replaceWorker(worker);
         this.dispatch();
       }, this.taskTimeoutMs);
     }
