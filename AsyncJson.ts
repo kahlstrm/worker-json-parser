@@ -132,10 +132,7 @@ class AsyncJson {
         promiseHandlers.reject(err);
         this.workerTaskMap.delete(worker);
       }
-      this.removeWorker(worker);
-      if (!this.isClosing) {
-        this.spawnWorker();
-      }
+      this.replaceWorker(worker);
     });
 
     worker.on("exit", (code) => {
@@ -154,9 +151,10 @@ class AsyncJson {
           this.workerTaskMap.delete(worker);
         }
       }
-      this.removeWorker(worker);
-      if (code !== 0 && !this.isClosing && !timedOut && !errored) {
-        this.spawnWorker();
+      if (code !== 0 && !timedOut && !errored) {
+        this.replaceWorker(worker);
+      } else {
+        this.removeWorker(worker);
       }
     });
 
@@ -164,10 +162,16 @@ class AsyncJson {
   }
 
   private spawnWorker(): void {
+    if (this.isClosing) return;
     const worker = this.createWorker();
     this.workers.push(worker);
     this.idleWorkers.push(worker);
     this.dispatch();
+  }
+
+  private replaceWorker(worker: Worker): void {
+    this.removeWorker(worker);
+    this.spawnWorker();
   }
 
   private initWorkers(): void {
@@ -222,10 +226,7 @@ class AsyncJson {
         reject(new Error("Worker task timed out"));
         this.timedOutWorkers.add(worker);
         worker.terminate();
-        this.removeWorker(worker);
-        if (!this.isClosing) {
-          this.spawnWorker();
-        }
+        this.replaceWorker(worker);
         this.dispatch();
       }, this.taskTimeoutMs);
     }
